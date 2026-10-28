@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="es">
+<head>
+<!--HEAD-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Taller de Python</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<!--/HEAD-->
+<link rel="stylesheet" href="vendor/codemirror.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!--APP-->
+<div id="boot" class="boot">Cargando la plataforma…</div>
+
+<section id="view-login" class="login" hidden>
+  <div class="login-card">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">&gt;&gt;&gt;</span>
+      <div>
+        <p class="eyebrow" id="school-name">Taller de Python</p>
+        <h1 id="login-title">Ingresa a tu taller</h1>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="tab-in" aria-selected="true">Ingresar</button>
+      <button type="button" role="tab" id="tab-up" aria-selected="false">Crear cuenta</button>
+    </div>
+
+    <form id="form-login" class="stack" novalidate>
+      <label class="field" id="field-name" hidden>
+        <span>Nombre completo</span>
+        <input id="in-name" autocomplete="name" placeholder="Ej. Valentina Gómez">
+      </label>
+      <label class="field">
+        <span>Correo</span>
+        <input id="in-email" type="email" autocomplete="email" placeholder="tu.correo@colegio.edu.co">
+      </label>
+      <label class="field">
+        <span>Contraseña</span>
+        <input id="in-pass" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres">
+      </label>
+      <p class="form-msg" id="login-msg" role="alert"></p>
+      <button class="btn primary wide" id="btn-submit" type="submit">Ingresar</button>
+      <button type="button" class="link" id="btn-forgot">¿Olvidaste tu contraseña?</button>
+    </form>
+
+    <p class="demo-note" id="demo-note" hidden>
+      <strong>Modo demostración.</strong> Las cuentas y proyectos se guardan solo en este navegador.
+      Para entrar como profesor, crea una cuenta con <code id="demo-teacher"></code>.
+    </p>
+  </div>
+  <footer class="seal">SSY 🔭🐧</footer>
+</section>
+
+<section id="view-app" class="shell" hidden>
+  <nav class="rail" aria-label="Menú">
+    <button type="button" class="rail-btn" data-nav="projects" aria-label="Mis proyectos" title="Mis proyectos">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      <span>Proyectos</span>
+    </button>
+    <button type="button" class="rail-btn" data-nav="new" aria-label="Nuevo proyecto" title="Nuevo proyecto">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z M14 3v4h4 M12 11v6 M9 14h6"/></svg>
+      <span>Nuevo</span>
+    </button>
+    <button type="button" class="rail-btn" data-nav="students" id="nav-students" aria-label="Calificar" title="Calificar" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z M8 9l2 2 4-4 M8 15h8"/></svg>
+      <span>Calificar</span>
+    </button>
+    <button type="button" class="rail-btn" data-nav="account" aria-label="Mi cuenta" title="Mi cuenta">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>
+      <span>Cuenta</span>
+    </button>
+    <button type="button" class="rail-btn rail-end" data-nav="logout" aria-label="Salir" title="Salir">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4H5v16h9 M10 12h10 M16 8l4 4-4 4"/></svg>
+      <span>Salir</span>
+    </button>
+  </nav>
+
+  <main class="main">
+    <!-- Panel de la estudiante -->
+    <div id="page-projects" class="page" hidden>
+      <header class="page-head">
+        <div>
+          <p class="eyebrow">Mis proyectos</p>
+          <h1 id="hello">Bienvenida</h1>
+        </div>
+        <button type="button" class="btn primary" id="btn-new">+ Nuevo proyecto</button>
+      </header>
+
+      <form id="form-new" class="new-form" hidden>
+        <label class="field grow">
+          <span>Nombre del proyecto</span>
+          <input id="in-new-title" maxlength="80" placeholder="Ej. Calculadora de promedio">
+        </label>
+        <button class="btn primary" type="submit" id="btn-create">Crear</button>
+        <button class="btn ghost" type="button" id="btn-cancel-new">Cancelar</button>
+      </form>
+
+      <div class="dash">
+        <section class="list-panel" aria-label="Lista de proyectos">
+          <ol id="project-list" class="project-list"></ol>
+        </section>
+        <aside id="project-card" class="grade-card" aria-live="polite"></aside>
+      </div>
+    </div>
+
+    <!-- Vista del profesor -->
+    <div id="page-students" class="page" hidden>
+      <header class="page-head">
+        <div>
+          <p class="eyebrow">Calificar</p>
+          <h1>Proyectos del curso</h1>
+        </div>
+        <p class="summary" id="students-summary"></p>
+      </header>
+      <div class="filters">
+        <label class="field grow">
+          <span>Buscar estudiante o proyecto</span>
+          <input id="in-search" type="search" placeholder="Nombre, correo o proyecto">
+        </label>
+        <label class="field">
+          <span>Mostrar</span>
+          <select id="in-status">
+            <option value="all">Todos</option>
+            <option value="pending">Sin calificar</option>
+            <option value="graded">Calificados</option>
+          </select>
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table class="grades">
+          <thead>
+            <tr><th>Estudiante</th><th>Proyecto</th><th>Última edición</th><th class="num">Nota</th></tr>
+          </thead>
+          <tbody id="students-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Cuenta -->
+    <div id="page-account" class="page" hidden>
+      <header class="page-head">
+        <div>
+          <p class="eyebrow">Mi cuenta</p>
+          <h1 id="account-name"></h1>
+        </div>
+      </header>
+      <dl class="account">
+        <div><dt>Correo</dt><dd id="account-email"></dd></div>
+        <div><dt>Rol</dt><dd id="account-role"></dd></div>
+      </dl>
+      <div class="stack narrow">
+        <button type="button" class="btn ghost" id="btn-reset">Enviarme un correo para cambiar la contraseña</button>
+        <p class="form-msg" id="account-msg" role="status"></p>
+      </div>
+    </div>
+
+    <!-- Editor -->
+    <div id="page-editor" class="page editor-page" hidden>
+      <header class="ed-head">
+        <button type="button" class="btn ghost icon" id="btn-back" aria-label="Volver">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="ed-titles">
+          <input id="ed-title" class="ed-title" maxlength="80" aria-label="Nombre del proyecto">
+          <p class="ed-meta"><span id="ed-owner"></span><span id="ed-status"></span></p>
+        </div>
+        <span id="ed-grade" class="grade-chip"></span>
+        <button type="button" class="btn primary" id="btn-save">Guardar</button>
+      </header>
+
+      <form id="grade-bar" class="grade-bar" hidden>
+        <label class="field">
+          <span>Nota</span>
+          <input id="in-grade" type="text" inputmode="decimal" autocomplete="off">
+        </label>
+        <label class="field grow">
+          <span>Comentario para la estudiante</span>
+          <input id="in-feedback" maxlength="500" placeholder="Qué hizo bien y qué puede mejorar">
+        </label>
+        <button class="btn primary" type="submit" id="btn-grade">Guardar nota</button>
+        <p class="form-msg" id="grade-msg" role="status"></p>
+      </form>
+
+      <p id="ed-feedback" class="feedback" hidden></p>
+
+      <div class="ed-body">
+        <div class="ed-left" id="ed-left">
+          <section class="pane code-pane" aria-label="Código">
+            <div class="pane-bar"><span class="pane-name">main.py</span><span class="pane-hint">Ctrl + Enter para ejecutar</span></div>
+            <div id="code-host" class="code-host"></div>
+          </section>
+          <section class="pane files-pane" id="files-pane" aria-label="Archivos de datos">
+            <div class="pane-bar">
+              <button type="button" class="files-toggle" id="files-toggle" aria-expanded="true" aria-controls="files-body">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                Archivos de datos <span class="files-count" id="files-count"></span>
+              </button>
+              <label class="btn small ghost upload-btn" id="upload-label">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4 M7 9l5-5 5 5 M5 20h14"/></svg>
+                Subir archivo
+                <input type="file" id="file-input" multiple accept=".csv,.tsv,.txt,.json,.xlsx,.xls">
+              </label>
+            </div>
+            <div class="files-body" id="files-body">
+              <ul class="file-list" id="file-list"></ul>
+              <p class="form-msg" id="files-msg" role="status"></p>
+            </div>
+          </section>
+        </div>
+        <section class="pane console-pane" aria-label="Consola">
+          <div class="pane-bar">
+            <span class="pane-name">Consola</span>
+            <span id="py-state" class="py-state"></span>
+            <span class="pane-actions">
+              <button type="button" class="btn small ghost" id="btn-clear">Limpiar</button>
+              <button type="button" class="btn small ghost" id="btn-stop" disabled>Detener</button>
+              <button type="button" class="btn small run" id="btn-run">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5l12 7-12 7z"/></svg>Ejecutar
+              </button>
+            </span>
+          </div>
+          <pre id="console-out" class="console-out" tabindex="0"></pre>
+          <form id="console-in" class="console-in" hidden>
+            <span aria-hidden="true">›</span>
+            <input id="console-input" autocomplete="off" aria-label="Respuesta para input()" placeholder="Escribe y presiona Enter">
+          </form>
+        </section>
+      </div>
+    </div>
+    <footer class="seal">SSY 🔭🐧</footer>
+  </main>
+</section>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="vendor/codemirror-bundle.js"></script>
+<script type="module" src="app.js"></script>
+<!--/APP-->
+</body>
+</html>

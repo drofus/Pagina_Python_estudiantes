@@ -1,0 +1,96 @@
+rules_version = '2';
+
+// Reglas de seguridad de la base de datos.
+// - Cada estudiante solo ve y edita sus propios proyectos.
+// - Las estudiantes no pueden cambiar su nota ni el comentario.
+// - El profesor ve todos los proyectos y solo cambia nota y comentario.
+//
+// IMPORTANTE: escribe aquí los mismos correos de profesor que en config.js, en minúsculas.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isTeacher() {
+      return signedIn() && request.auth.token.email.lower() in [
+        'profesor@colegio.edu.co'
+      ];
+    }
+
+    function projectOwner(projectId) {
+      return get(/databases/$(database)/documents/projects/$(projectId)).data.ownerId;
+    }
+
+    function ownsProject(projectId) {
+      return signedIn() && projectOwner(projectId) == request.auth.uid;
+    }
+
+    function canSeeProject(projectId) {
+      return isTeacher() || ownsProject(projectId);
+    }
+
+    function validCode(data) {
+      return data.title is string && data.title.size() <= 80
+        && data.code is string && data.code.size() <= 200000;
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isTeacher());
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'email', 'createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 100;
+    }
+
+    match /projects/{projectId} {
+      allow read: if signedIn()
+        && (resource.data.ownerId == request.auth.uid || isTeacher());
+
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.keys().hasOnly(['ownerId', 'ownerName', 'ownerEmail', 'title', 'code', 'grade', 'feedback', 'createdAt', 'updatedAt'])
+        && request.resource.data.grade == null
+        && request.resource.data.feedback == ''
+        && validCode(request.resource.data);
+
+      allow update: if signedIn() && (
+        (resource.data.ownerId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'code', 'updatedAt'])
+          && validCode(request.resource.data))
+        ||
+        (isTeacher()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['grade', 'feedback', 'gradedAt'])
+          && (request.resource.data.grade == null || request.resource.data.grade is number)
+          && request.resource.data.feedback is string && request.resource.data.feedback.size() <= 500)
+      );
+
+      // Una estudiante puede borrar sus proyectos mientras no tengan nota.
+      allow delete: if signedIn() && (
+        (resource.data.ownerId == request.auth.uid && resource.data.grade == null)
+        || isTeacher()
+      );
+
+      // Archivos de datos del proyecto (CSV, Excel...), partidos en trozos de hasta 900 KB.
+      match /files/{fileId} {
+        allow read: if canSeeProject(projectId);
+        allow create: if ownsProject(projectId)
+          && request.resource.data.keys().hasOnly(['name', 'type', 'size', 'chunks', 'uploadedAt'])
+          && request.resource.data.name is string && request.resource.data.name.size() <= 120
+          && request.resource.data.size is int && request.resource.data.size <= 5242880
+          && request.resource.data.chunks is int && request.resource.data.chunks <= 6;
+        allow delete: if ownsProject(projectId) || isTeacher();
+
+        match /chunks/{chunkId} {
+          allow read: if canSeeProject(projectId);
+          allow create: if ownsProject(projectId)
+            && request.resource.data.keys().hasOnly(['data'])
+            && request.resource.data.data is bytes
+            && request.resource.data.data.size() <= 921600;
+          allow delete: if ownsProject(projectId) || isTeacher();
+        }
+      }
+    }
+  }
+}
