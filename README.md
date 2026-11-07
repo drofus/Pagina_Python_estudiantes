@@ -5,8 +5,14 @@ proyectos de Python, los guardan y los ejecutan en el navegador. El profesor ve
 los proyectos de todas, los ejecuta y les pone nota y comentario.
 
 Python corre dentro del navegador de cada estudiante (con Pyodide), así que
-no necesitas un servidor que ejecute código. Firebase guarda las cuentas y los
-proyectos. Su plan gratuito (Spark) alcanza de sobra para un colegio.
+no necesitas un servidor que ejecute código. El trabajo se reparte así:
+
+- **GitHub Pages** publica la página. Cada cambio que entra a la rama `main`
+  se publica solo en uno o dos minutos.
+- **Firebase** guarda las cuentas, los proyectos, las notas y los archivos de
+  datos. Su plan gratuito (Spark) alcanza de sobra para un colegio.
+
+Enlace para las estudiantes: **<https://drofus.github.io/Pagina_Python_estudiantes/>**
 
 ## Qué hay en la carpeta
 
@@ -16,7 +22,8 @@ proyectos. Su plan gratuito (Spark) alcanza de sobra para un colegio.
 | `firestore.rules` | Reglas de seguridad: quién puede ver y cambiar qué |
 | `index.html`, `styles.css`, `app.js`, `backend.js`, `py-worker.js` | La aplicación |
 | `vendor/` | El editor de código (CodeMirror) |
-| `firebase.json` | Configuración para publicar con Firebase Hosting |
+| `firebase.json` | Opcional: permite publicar las reglas con la herramienta `firebase` |
+| `.nojekyll` | Le dice a GitHub Pages que publique los archivos tal cual |
 
 Puedes probarla sin configurar nada: mientras `config.js` no tenga los datos
 de Firebase, funciona en **modo demostración** y guarda todo solo en el
@@ -35,9 +42,9 @@ navegador donde la abras.
    datos*. Elige una ubicación cercana (ej. `southamerica-east1` o
    `us-east1`) y empieza en **modo de producción**.
 4. **Reglas de seguridad**: en Firestore, pestaña *Reglas*. Borra lo que hay,
-   pega todo el contenido de `firestore.rules` y cambia
-   `profesor@colegio.edu.co` por tu correo (puedes poner varios, separados
-   por coma). Pulsa **Publicar**.
+   pega todo el contenido de `firestore.rules` de este repositorio y pulsa
+   **Publicar**. Las reglas ya tienen el correo de profesor y el dominio del
+   colegio; si cambias alguno, cámbialo también en `config.js`.
 5. **Registrar la app web**: en *Configuración del proyecto* (el engranaje) →
    *Tus apps* → icono `</>`. Ponle un nombre. Firebase te muestra un bloque
    `firebaseConfig = { apiKey: ..., authDomain: ..., ... }`.
@@ -62,35 +69,20 @@ allowedDomain: "colegio.edu.co",               // opcional: solo correos del col
 La `apiKey` de Firebase no es secreta: identifica tu proyecto, y lo que
 protege los datos son las reglas del paso 1.4.
 
-## Paso 3. Publicar la página
+## Paso 3. Publicar la página con GitHub Pages
 
-**Opción A: Firebase Hosting (recomendada).** Necesitas Node.js instalado
-(<https://nodejs.org>). En una terminal, dentro de esta carpeta:
+1. En GitHub, abre el repositorio y ve a *Settings → Pages*.
+2. En *Build and deployment → Source* elige **Deploy from a branch**.
+3. En *Branch* elige **main** y la carpeta **/ (root)**. Pulsa **Save**.
+4. Espera uno o dos minutos. Arriba de esa misma página aparece el enlace:
+   <https://drofus.github.io/Pagina_Python_estudiantes/>
+5. En Firebase, ve a *Authentication → Configuración → Dominios autorizados*
+   y agrega `drofus.github.io`.
 
-```bash
-npm install -g firebase-tools
-```
-
-```bash
-firebase login
-```
-
-```bash
-firebase use --add
-```
-
-```bash
-firebase deploy
-```
-
-`firebase use --add` te deja elegir el proyecto que creaste. Al terminar,
-`firebase deploy` te da el enlace, algo como
-`https://taller-python-colegio.web.app`. Ese es el que compartes con las
-estudiantes. El mismo comando también publica las reglas de seguridad.
-
-**Opción B: sin instalar nada.** Arrastra la carpeta completa a
-<https://app.netlify.com/drop>. Luego, en Firebase, ve a *Authentication →
-Configuración → Dominios autorizados* y agrega el dominio que te dio Netlify.
+Desde ahí, cada cambio que se aprueba y entra a `main` se publica solo.
+**Las reglas de seguridad no se publican con GitHub Pages**: cada vez que
+cambie `firestore.rules`, hay que pegarlo otra vez en la consola de Firebase
+(paso 1.4).
 
 ## Paso 4. Crear tu cuenta de profesor primero
 
@@ -144,8 +136,10 @@ pueda registrar ese correo. Al entrar verás la sección **Calificar**.
 
 - **Otra escala de notas**: en `config.js`, `grade: { min: 0, max: 10, pass: 6 }`.
 - **Agregar otro profesor**: agrega el correo en `config.js` y en
-  `firestore.rules`, y vuelve a publicar (o pega las reglas otra vez en la
-  consola de Firebase).
+  `firestore.rules`, y pega las reglas otra vez en la consola de Firebase.
+- **Aceptar correos de otro dominio**: cambia `allowedDomain` en `config.js`
+  y la función `fromSchool()` en `firestore.rules`. Con `allowedDomain: ""`,
+  borra también la condición de dominio en las reglas.
 - **Nombre en la pantalla de ingreso**: `schoolName` en `config.js`.
 
 ## Qué tener en cuenta
