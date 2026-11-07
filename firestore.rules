@@ -5,7 +5,8 @@ rules_version = '2';
 // - Las estudiantes no pueden cambiar su nota ni el comentario.
 // - El profesor ve todos los proyectos y solo cambia nota y comentario.
 //
-// IMPORTANTE: escribe aquí los mismos correos de profesor que en config.js, en minúsculas.
+// IMPORTANTE: escribe aquí los mismos correos de profesor que en config.js, en minúsculas,
+// y el mismo dominio del colegio que allowedDomain.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -16,8 +17,13 @@ service cloud.firestore {
 
     function isTeacher() {
       return signedIn() && request.auth.token.email.lower() in [
-        'profesor@colegio.edu.co'
+        'ssierra@pinaresaltoverde.edu.co'
       ];
+    }
+
+    // Solo cuentas con correo del colegio pueden crear perfiles y proyectos.
+    function fromSchool() {
+      return signedIn() && request.auth.token.email.lower().matches('.*@pinaresaltoverde[.]edu[.]co');
     }
 
     function projectOwner(projectId) {
@@ -39,7 +45,7 @@ service cloud.firestore {
 
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isTeacher());
-      allow create, update: if signedIn() && request.auth.uid == uid
+      allow create, update: if fromSchool() && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['name', 'email', 'createdAt'])
         && request.resource.data.name is string && request.resource.data.name.size() <= 100;
     }
@@ -48,7 +54,7 @@ service cloud.firestore {
       allow read: if signedIn()
         && (resource.data.ownerId == request.auth.uid || isTeacher());
 
-      allow create: if signedIn()
+      allow create: if fromSchool()
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.keys().hasOnly(['ownerId', 'ownerName', 'ownerEmail', 'title', 'code', 'grade', 'feedback', 'createdAt', 'updatedAt'])
         && request.resource.data.grade == null
