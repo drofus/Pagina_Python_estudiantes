@@ -10,20 +10,20 @@ export const CONFIG = {
   // Mientras apiKey esté vacío, la plataforma funciona en "modo demostración":
   // todo se guarda solo en este navegador.
   firebase: {
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: "",
+    apiKey: "AIzaSyCRMXnPA-55fUaB1URH5-N4bppQ0eWlajM",
+    authDomain: "python-colegio-entorno.firebaseapp.com",
+    projectId: "python-colegio-entorno",
+    storageBucket: "python-colegio-entorno.firebasestorage.app",
+    messagingSenderId: "143007005129",
+    appId: "1:143007005129:web:fd4ad43d34921898601018",
   },
 
   // Correos de las cuentas de profesor, en minúsculas.
   // Deben coincidir con la lista que está en firestore.rules.
-  teacherEmails: ["profesor@colegio.edu.co"],
+  teacherEmails: ["ssierra@pinaresaltoverde.edu.co"],
 
   // Si lo llenas (ej. "colegio.edu.co"), solo se pueden crear cuentas con ese dominio.
-  allowedDomain: "",
+  allowedDomain: "pinaresaltoverde.edu.co",
 
   // Escala de notas.
   grade: { min: 1, max: 5, pass: 3, step: 0.1 },
